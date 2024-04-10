@@ -1,5 +1,6 @@
 import express from "express";
 import Routes from "../routes/index.js";
+import Logger from "rklogger";
 
 class ExpressService {
     initialBackend(cb) {
@@ -9,7 +10,7 @@ class ExpressService {
         app.use(express.urlencoded({extended: false}));
         Routes.setRoutes(app);
         let server = app.listen(3333);
-        console.log('Express Service Initialised');
+        Logger.printInfo("Express Service Initialised");
         cb(true);
     }
 }
