@@ -1,7 +1,7 @@
 import express from "express";
 import Logger from "rklogger";
-import APIHelper from "../helpers/api.js";
-import scoreResult from "../data/score.js";
+import Helper from "../helpers/index.js";
+import scoreResult from "../data/index.js";
 
 let scoringRouter = express.Router();
 
@@ -9,12 +9,14 @@ scoringRouter.post('/check', function (req, res, next) {
     Logger.printDebug("User Request POST: /check/status");
     const userAnswer = req.body.answer;
 
-    APIHelper.checkGrammar(userAnswer, (cb) => {
+    Helper.APIHelper.checkGrammar(userAnswer, (cb) => {
         let scoreResponse = scoreResult;
-        // TODO PROCESSING SCORE
-
-        scoreResponse.autoCorrectionResult = cb.matches;
-        res.json(scoreResponse);
+        scoreResponse.scoreResult.content = Helper.ScoreHelper.getContentScore();
+        scoreResponse.scoreResult.coherence = Helper.ScoreHelper.getCoherenceScore();
+        scoreResponse.scoreResult.lexical = Helper.ScoreHelper.getLexicalScore();
+        scoreResponse.scoreResult.grammar = Helper.ScoreHelper.getGrammarScore();
+        scoreResponse.scoreResult.autoCorrectionResult = cb.matches;
+        res.json(scoreResponse.scoreResult);
     });
 
 });

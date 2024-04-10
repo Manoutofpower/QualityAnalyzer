@@ -1,6 +1,11 @@
 import axios from "axios";
 import Logger from "rklogger";
 
+/**
+ * CHECK GRAMMAR RESULT FROM GRAMMARBOT
+ * @param word  Testing Text
+ * @param cb    CALLBACK
+ */
 function checkGrammar(word, cb) {
     const encodedParams = new URLSearchParams();
     encodedParams.set('text', word);
@@ -21,8 +26,8 @@ function checkGrammar(word, cb) {
     });
 }
 
-const APIHelper = {
+const ApiHelper = {
     checkGrammar
 };
 
-export default APIHelper;
+export default ApiHelper;

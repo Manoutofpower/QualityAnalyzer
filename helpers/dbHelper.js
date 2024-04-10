@@ -4,7 +4,7 @@ import Services from "../services/index.js";
 import Logger from "rklogger";
 
 /**
- *
+ * User Register
  * @param uName
  * @param uPassword
  * @param callback
@@ -23,7 +23,7 @@ function userRegister(uName, uPassword, callback) {
 }
 
 /**
- *
+ * User Login
  * @param uName
  * @param uPassword
  * @param callback
@@ -45,7 +45,7 @@ function userLogin(uName, uPassword, callback) {
 //region QUESTION RELATED
 
 /**
- *
+ * Get Question List
  * @param callback
  */
 function fetchQuestions(callback) {
@@ -61,7 +61,7 @@ function fetchQuestions(callback) {
 }
 
 /**
- *
+ * Get Question Details
  * @param qID
  * @param callback
  */

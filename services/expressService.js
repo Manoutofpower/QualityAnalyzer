@@ -3,6 +3,10 @@ import Routes from "../routes/index.js";
 import Logger from "rklogger";
 
 class ExpressService {
+    /**
+     * Initialise Express Service
+     * @param cb
+     */
     initialBackend(cb) {
         let app = express();
         app.disable('x-powered-by');

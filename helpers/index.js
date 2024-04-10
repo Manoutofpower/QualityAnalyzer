@@ -1,6 +1,7 @@
-import APIHelper from "./api.js";
+import ApiHelper from "./apiHelper.js";
 import MySQLHelper from "./dbHelper.js";
+import ScoreHelper from "./scoreHelper.js";
 
 export default {
-    APIHelper, MySQLHelper
+    APIHelper: ApiHelper, MySQLHelper, ScoreHelper
 }
