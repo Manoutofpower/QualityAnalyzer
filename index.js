@@ -1,3 +1,7 @@
 import Services from "./services/index.js";
 
-Services.ExpressService.initialBackend();
+Services.ExpressService.initialBackend((cb) => {
+    if (cb) {
+        console.log('Backend Fully Initialised');
+    }
+});
