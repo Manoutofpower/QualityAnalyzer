@@ -7,7 +7,7 @@ mainRouter.get('/status', function (req, res, next) {
 });
 
 mainRouter.post('/status', function (req, res, next) {
-    res.send('POST OK');
+    res.send('OK');
 });
 
 export default mainRouter;
