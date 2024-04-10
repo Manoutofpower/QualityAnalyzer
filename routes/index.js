@@ -4,7 +4,7 @@ import userRouter from "./user.js";
 
 const setRoutes = (app) => {
     app.use('/', defaultRouter);
-    app.use('/check', grammarRouter);
+    app.use('/api', grammarRouter);
     app.use('/user', userRouter);
 }
 
