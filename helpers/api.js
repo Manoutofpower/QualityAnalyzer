@@ -14,7 +14,7 @@ function checkGrammar(word, cb) {
         }, data: encodedParams,
     }).then((response) => {
         Logger.printDebug('[TEXT] checkGrammar response');
-        cb(response);
+        cb(response.data);
     }).catch((error) => {
         Logger.printError('[TEXT] getGrammarResult Error：' + error);
         cb(error);

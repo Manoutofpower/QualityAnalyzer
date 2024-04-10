@@ -9,7 +9,7 @@ grammarRouter.post('/check', function (req, res, next) {
     const userAnswer = req.body.answer;
 
     APIHelper.checkGrammar(userAnswer, (cb) => {
-        res.send(cb);
+        res.json(cb);
     });
 
 });
