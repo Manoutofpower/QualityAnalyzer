@@ -16,10 +16,7 @@ function getContentScore(userAnswer, topic) {
         antonyms.forEach(word => allRelatedWordsSet.add(word));
     }
 
-    const allRelatedWordsArray = Array.from(allRelatedWordsSet);
-    console.log(allRelatedWordsArray.slice(0, 100));
-
-    let cutoffComma = userAnswer.replace(/[.,\/#!$%\^&\*;:{}=_`~()]/g,"");
+    let cutoffComma = userAnswer.replace(/[.,\/#!$%\^&\*;:{}=_`~()]/g, "");
     let lowercase = cutoffComma.toLowerCase().split(/\s+/);
     let splitWords = lowercase.map(word => {
         // Get Rid of all "'s" and "s'"
@@ -61,7 +58,7 @@ function getContentScore(userAnswer, topic) {
     } else if (matchPercentage >= 4) {
         score = 2;
         explain = "Addresses the task only minimally with very limited relevance.";
-    } else if (matchPercentage < 4){
+    } else if (matchPercentage < 4) {
         score = 1;
         explain = "Does not address the topic or task.";
     } else {
@@ -77,79 +74,108 @@ function getRelatedWords(word, relType) {
 
     if (wordEntry && relType === 'rel_syn') {
         return wordEntry.synonyms.slice();
-    }
-    else if (wordEntry && relType === 'rel_ant') {
+    } else if (wordEntry && relType === 'rel_ant') {
         return wordEntry.antonyms.slice();
     }
     return [];
 }
 
-
 function getCoherenceScore(userAnswer) {
-    const coherenceWordsSet = new Set([coherenceWords]);
+    const coherenceWordsSet = new Set(coherenceWords);
 
-    const cleanedAnswer = userAnswer.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=_`~()]/g, "");
-    let matchCount = 0;
+    const paragraphSplit = userAnswer.split('\n');
+    let paragraphs = [];
 
-    coherenceWordsSet.forEach(cohesionPhrase => {
-        const pattern = new RegExp("\\b" + cohesionPhrase + "\\b", "g");
-        const match = cleanedAnswer.match(pattern);
-        if (match) {
-            matchCount += match.length;
+    for (let i = 0; i < paragraphSplit.length; i++) {
+        let paragraph = paragraphSplit[i];
+        if (paragraph.trim() !== '') {
+            paragraphs.push(paragraph);
         }
+    }
+
+    let totalPercentage = 0;
+    let totalWords = [];
+
+    paragraphs.forEach(paragraph => {
+        const cleanedParagraph = paragraph.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=_`~()]/g, "");
+        let paragraphWords = cleanedParagraph.split(/\s+/);
+        totalWords.push(...paragraphWords);
+        let matchCount = 0;
+
+        coherenceWordsSet.forEach(cohesionPhrase => {
+            const pattern = new RegExp("\\b" + cohesionPhrase + "\\b", "g");
+            const match = cleanedParagraph.match(pattern);
+            if (match) {
+                matchCount += match.length;
+            }
+        });
+
+        let percentage = 0;
+        if (paragraphWords.length > 0) {
+            percentage = (matchCount / paragraphWords.length) * 100;
+        }
+        totalPercentage += percentage;
     });
 
-    // Calculate percentage
-    const percentage = (matchCount / cleanedAnswer.length) * 100;
+    let averagePercentage = 0;
+    if (paragraphs.length > 0) {
+        averagePercentage = totalPercentage / paragraphs.length;
+    }
 
     let score;
     let explain;
 
-    if (percentage < 3) {
+    if (averagePercentage < 1) {
+        score = 1;
+        explain = "Oh Bro";
+    } else if (averagePercentage < 3) {
         score = 2;
         explain = "Shows some attempt to organize ideas, but connections between sentences are flawed or non-existent.";
-    } else if (percentage < 5) {
+    } else if (averagePercentage < 5) {
         score = 3;
         explain = "Presents some coherent organisation, but the use of cohesive devices is often mechanical or inappropriate.";
-    } else if (percentage < 10) {
+    } else if (averagePercentage < 10) {
         score = 4;
         explain = "Exhibits a basic organisation structure, but the usage of cohesive devices and paragraphing may be inadequate.";
-    } else if (percentage < 15) {
+    } else if (averagePercentage < 15) {
         score = 5;
         explain = "Demonstrates a generally clear organisation of ideas, but with occasional misuse of cohesive devices.";
-    } else if (percentage < 20) {
+    } else if (averagePercentage < 20) {
         score = 6;
         explain = "Presents a clear overall organisation, but may show some underuse or overuse of cohesive devices.";
-    } else if (percentage < 25) {
+    } else if (averagePercentage < 25) {
         score = 7;
         explain = "Shows a good control over organisation and cohesion, with varied and appropriate use of cohesive devices.";
-    } else if (percentage < 30) {
+    } else if (averagePercentage < 30) {
         score = 8;
         explain = "Manages coherence and cohesion very effectively, with skillful use of paragraphs and cohesive devices.";
-    } else if (percentage < 35){
+    } else if (averagePercentage < 35) {
         score = 9;
         explain = "Expertly manages both coherence and cohesion, with seamless integration of ideas across the text.";
     } else {
         score = 'invalid';
-        explain = 'Somethings wrong, report to the administrator'
+        explain = "Something's wrong, report to the administrator";
     }
 
-    return {score: score, explain: explain};
+    return { score: score, explain: explain };
 }
 
-function getLexicalScore(userAnswer) {
-    const words = userAnswer.toLowerCase().match(/\b(\w+)\b/g);
-    let matchCount = 0;
 
+function getLexicalScore(userAnswer) {
     const awlSet = new Set(AWL);
+
+    const cleanedAnswer = userAnswer.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=_`~()]/g, "");
+
+    const words = cleanedAnswer.split(/\s+/);
+
+    let matchCount = 0;
 
     words.forEach(word => {
         if (awlSet.has(word)) {
             matchCount++;
         }
     });
-
-    const percentage = (matchCount / words.length) * 100;
+    const percentage = (matchCount / cleanedAnswer.length) * 100;
 
     let score;
     // Percentage to Score
@@ -216,7 +242,7 @@ function getGrammarScore(error) {
     let initialScore = 9;
 
     let score = initialScore - errorCount;
-    if (score <= 1){
+    if (score <= 1) {
         score = 1;
     }
 
