@@ -1,4 +1,5 @@
 import AWL from '../data/awl.js'
+import score from "../data/score.js";
 
 function getContentScore(userAnswer, topic) {
     const topics = topic.split('|');
@@ -212,9 +213,51 @@ function getLexicalScore(userAnswer) {
     return {score: score, explain: explain};
 }
 
-function getGrammarScore(word) {
-    //TODO GET GRAMMAR SCORE
-    return {score: 1, explain: "2"};
+function getGrammarScore(error) {
+    let errorCount = error.filter(error => "message" in error).length;
+    // Initial 9
+    let initialScore = 9;
+
+    let score = initialScore - errorCount;
+    if (score <= 1){
+        score = 1;
+    }
+
+    let explain;
+    switch (score) {
+        case 1:
+            explain = "Displays virtually no ability to control grammatical structures; errors are pervasive and severely impede understanding.";
+            break;
+        case 2:
+            explain = "Can only use a very limited range of grammatical structures with repeated errors that seriously affect comprehension.";
+            break;
+        case 3:
+            explain = "Manages only a limited number of basic grammatical structures; makes frequent errors that are often serious.";
+            break;
+        case 4:
+            explain = "Utilizes a limited range of grammatical structures sufficient to convey basic meaning, despite some errors.";
+            break;
+        case 5:
+            explain = "Demonstrates a reasonable range of grammatical control; though errors may occur, they rarely impede understanding.";
+            break;
+        case 6:
+            explain = "Uses a mix of simple and complex grammatical structures; while some errors are present, they usually do not hinder communication.";
+            break;
+        case 7:
+            explain = "Shows good control of a broad range of grammatical structures; errors are present but do not lead to misunderstanding.";
+            break;
+        case 8:
+            explain = "Displays a wide range of grammatical structures with high accuracy; makes only occasional minor errors.";
+            break;
+        case 9:
+            explain = "Has a full operational command of the grammar system; errors are rare and difficult to spot.";
+            break;
+        default:
+            explain = "Default Score";
+            break;
+    }
+
+    return {score: score, explain: explain};
 }
 
 const ScoreHelper = {

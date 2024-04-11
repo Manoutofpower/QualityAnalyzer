@@ -11,12 +11,13 @@ scoringRouter.post('/check', function (req, res, next) {
     const topic = req.body.topic;
 
     Helper.APIHelper.checkGrammar(userAnswer, (cb) => {
+        let error = cb.matches;
         let scoreResponse = scoreResult;
         scoreResponse.scoreResult.content = Helper.ScoreHelper.getContentScore(userAnswer, topic);
         scoreResponse.scoreResult.coherence = Helper.ScoreHelper.getCoherenceScore(userAnswer);
         scoreResponse.scoreResult.lexical = Helper.ScoreHelper.getLexicalScore(userAnswer);
-        scoreResponse.scoreResult.grammar = Helper.ScoreHelper.getGrammarScore();
-        scoreResponse.scoreResult.autoCorrectionResult = cb.matches;
+        scoreResponse.scoreResult.grammar = Helper.ScoreHelper.getGrammarScore(error);
+        scoreResponse.scoreResult.autoCorrectionResult = error;
         res.json(scoreResponse.scoreResult);
     });
 
