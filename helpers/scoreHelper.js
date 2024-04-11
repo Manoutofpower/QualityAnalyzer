@@ -1,5 +1,5 @@
 import AWL from '../data/awl.js'
-import score from "../data/score.js";
+import dictionary from "../data/dictionary.js"
 
 function getContentScore(userAnswer, topic) {
     const topics = topic.split('|');
