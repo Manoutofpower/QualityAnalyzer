@@ -2,6 +2,7 @@ import AWL from '../data/awl.js'
 import dictionary from "../data/dictionary.js"
 import coherenceWords from "../data/coherenceWords.js";
 import stopwords from "../data/stopwords.js";
+import nlp from 'compromise'
 
 function getContentScore(userAnswer, topic) {
     const topics = topic.split('|');
@@ -17,49 +18,70 @@ function getContentScore(userAnswer, topic) {
         antonyms.forEach(word => allRelatedWordsSet.add(word));
     }
 
+    // Remove punctuation from user's answer and convert to lowercase, then split into words
     let cutoffComma = userAnswer.replace(/[.,\/#!$%\^&\*;:{}=_`~()]/g, "");
     let lowercase = cutoffComma.toLowerCase().split(/\s+/);
-    let splitWords = lowercase.map(word => {
-        // Get Rid of all "'s" and "s'"
-        return word.replace(/'s$/, '').replace(/s'$/, '');
+
+    // Join words back into a single string for NLP processing
+    let preprocessedText = lowercase.join(' ');
+
+    // Process text with NLP library
+    let preprocessDoc = nlp(preprocessedText);
+
+    // Extract verbs in infinitive form, nouns in singular form, adjectives, and adverbs
+    let verbs = preprocessDoc.verbs().toInfinitive().out('array');
+    let nouns = preprocessDoc.nouns().toSingular().out('array');
+    let adjectives = preprocessDoc.adjectives().out('array');
+    let adverbs = preprocessDoc.adverbs().out('array');
+
+    // Combine all extracted words into one array
+    let group = verbs.concat(nouns, adjectives, adverbs);
+
+    let splitWords = group.flatMap(item => {
+        // Separate by space
+        let words = item.split(' ');
+        return words.map(word => {
+            // Get rid of "'s" and mul
+            return word.replace(/'s$/, '').replace(/s'$/, '');
+        });
     });
 
-    let score = 1;
+    //if no include in stopwords.js, add it in.
+    let cutoffStopwords = splitWords.filter(word => !stopwords.includes(word));
+    // Now all the non-stopwords here are processed.
+    // Use the synonyms, antonyms obtained from processing all topics above for comparison.
+    // Finally, obtain a count.
+    let foundKeywordsCount = cutoffStopwords.filter(word => allRelatedWordsSet.has(word)).length;
+    let proportion = foundKeywordsCount / cutoffStopwords.length;
+
+    let score;
     let explain;
-    let matchedCount = 0;
-    allRelatedWordsSet.forEach(relatedWord => {
-        if (splitWords.includes(relatedWord)) {
-            matchedCount += 1;
-        }
-    });
 
-    let matchPercentage = (matchedCount / allRelatedWordsSet.size) * 100;
-
-    if (matchPercentage >= 60) {
+    if (proportion >= 60) {
         score = 9;
         explain = "Fully addresses the requirements of the task with complete and fully relevant responses.";
-    } else if (matchPercentage >= 50) {
+    } else if (proportion >= 50) {
         score = 8;
         explain = "Covers the task in detail with relevant, accurate content throughout.";
-    } else if (matchPercentage >= 40) {
+    } else if (proportion >= 40) {
         score = 7;
         explain = "Addresses all parts of the task, although some parts may be more fully covered than others.";
-    } else if (matchPercentage >= 30) {
+    } else if (proportion >= 30) {
         score = 6;
         explain = "Addresses the task adequately, but some key information may be inaccurately or incompletely covered.";
-    } else if (matchPercentage >= 20) {
+    } else if (proportion >= 20) {
         score = 5;
         explain = "Generally addresses the task; key information is presented but may lack detail.";
-    } else if (matchPercentage >= 10) {
+    } else if (proportion >= 10) {
         score = 4;
         explain = "Responds to the task only to a limited extent. Some key information may be missing.";
-    } else if (matchPercentage >= 7) {
+    } else if (proportion >= 7) {
         score = 3;
         explain = "Addresses the task only partially; the response is largely irrelevant.";
-    } else if (matchPercentage >= 4) {
+    } else if (proportion >= 4) {
         score = 2;
         explain = "Addresses the task only minimally with very limited relevance.";
-    } else if (matchPercentage < 4) {
+    } else if (proportion < 4) {
         score = 1;
         explain = "Does not address the topic or task.";
     } else {
@@ -158,7 +180,7 @@ function getCoherenceScore(userAnswer) {
         explain = "Something's wrong, report to the administrator";
     }
 
-    return { score: score, explain: explain };
+    return {score: score, explain: explain};
 }
 
 function getLexicalScore(userAnswer) {
@@ -209,7 +231,7 @@ function getLexicalScore(userAnswer) {
         explain = "Uses an extremely limited range of vocabulary; errors in word choice are pervasive and impede understanding.";
     }
 
-    return { score: score, explain: explain };
+    return {score: score, explain: explain};
 }
 
 

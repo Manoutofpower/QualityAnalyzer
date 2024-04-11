@@ -5,9 +5,10 @@
   "main": "index.js",
   "type": "module",
   "dependencies": {
+    "axios": "^1.6.8",
+    "compromise": "^14.13.0",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "axios": "^1.6.8",
     "mysql2": "^3.9.4",
     "rklogger": "^1.1.0"
   },
