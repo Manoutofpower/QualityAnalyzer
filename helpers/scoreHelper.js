@@ -1,6 +1,20 @@
-function getContentScore(word) {
-    //TODO GET CONTENT SCORE
-    return {score: 1, explain: "2"};
+function getContentScore(userAnswer, topic) {
+    const topics = topic.split('|');
+
+    let score = 1;
+    let explain = "Your answer not relevant to topic.";
+
+    if (score > 1) {
+        explain = "Your answer is relevant to the topic.";
+    }
+
+    for (let i = 0; i < topics.length; i++) {
+        if (userAnswer.includes(topics[i])) {
+            score += 1;
+        }
+    }
+
+    return {score: score, explain: explain};
 }
 
 function getCoherenceScore(word) {
