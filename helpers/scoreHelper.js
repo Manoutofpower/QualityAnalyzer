@@ -1,5 +1,6 @@
 import AWL from '../data/awl.js'
 import dictionary from "../data/dictionary.js"
+import coherenceWords from "../data/coherenceWords.js";
 
 function getContentScore(userAnswer, topic) {
     const topics = topic.split('|');
@@ -82,85 +83,55 @@ function getRelatedWords(word, relType) {
     }
     return [];
 }
-function getCoherenceScore(userAnswer) {
-    const coherenceWords = new Set([
-        // The word set
-        "and", "but", "or", "nor", "for", "yet", "so",
-        "therefore", "however", "moreover", "furthermore", "thus", "consequently", "accordingly", "hence", "meanwhile", "nonetheless",
-        "because", "since", "unless", "although", "even though", "while", "when", "whereas", "despite", "in spite of", "regardless",
-        "after", "before", "once", "until", "whenever", "during", "as soon as", "by the time",
-        "if", "only if", "unless", "until", "provided that", "assuming that", "even if", "in case",
-        "as", "like", "such as", "for example", "for instance", "namely", "to illustrate"
-    ]);
 
-    const words = userAnswer.toLowerCase().split(/\b\s+/);
+
+function getCoherenceScore(userAnswer) {
+    const coherenceWordsSet = new Set([coherenceWords]);
+
+    const cleanedAnswer = userAnswer.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=_`~()]/g, "");
     let matchCount = 0;
 
-    words.forEach(word => {
-        // Delete possible commas.
-        const cleanedWord = word.replace(/[.,\/#!$%\^&\*;:{}=_`~()]/g, "");
-        if (coherenceWords.has(cleanedWord)) {
-            matchCount += 1;
+    coherenceWordsSet.forEach(cohesionPhrase => {
+        const pattern = new RegExp("\\b" + cohesionPhrase + "\\b", "g");
+        const match = cleanedAnswer.match(pattern);
+        if (match) {
+            matchCount += match.length;
         }
     });
 
     // Calculate percentage
-    const percentage = (matchCount / words.length) * 100;
+    const percentage = (matchCount / cleanedAnswer.length) * 100;
 
     let score;
-    // Percentage to Score
-    if (percentage < 0) {
-        score = 1;
-    } else if (percentage < 3) {
+    let explain;
+
+    if (percentage < 3) {
         score = 2;
+        explain = "Shows some attempt to organize ideas, but connections between sentences are flawed or non-existent.";
     } else if (percentage < 5) {
         score = 3;
+        explain = "Presents some coherent organisation, but the use of cohesive devices is often mechanical or inappropriate.";
     } else if (percentage < 10) {
         score = 4;
+        explain = "Exhibits a basic organisation structure, but the usage of cohesive devices and paragraphing may be inadequate.";
     } else if (percentage < 15) {
         score = 5;
+        explain = "Demonstrates a generally clear organisation of ideas, but with occasional misuse of cohesive devices.";
     } else if (percentage < 20) {
         score = 6;
+        explain = "Presents a clear overall organisation, but may show some underuse or overuse of cohesive devices.";
     } else if (percentage < 25) {
         score = 7;
+        explain = "Shows a good control over organisation and cohesion, with varied and appropriate use of cohesive devices.";
     } else if (percentage < 30) {
         score = 8;
-    } else {
+        explain = "Manages coherence and cohesion very effectively, with skillful use of paragraphs and cohesive devices.";
+    } else if (percentage < 35){
         score = 9;
-    }
-
-    let explain;
-    switch (score) {
-        case 1:
-            explain = "The text lacks logical organisation and clear paragraphs, making it confusing and difficult to follow.";
-            break;
-        case 2:
-            explain = "Shows some attempt to organize ideas, but connections between sentences are flawed or non-existent.";
-            break;
-        case 3:
-            explain = "Presents some coherent organisation, but the use of cohesive devices is often mechanical or inappropriate.";
-            break;
-        case 4:
-            explain = "Exhibits a basic organisation structure, but the usage of cohesive devices and paragraphing may be inadequate.";
-            break;
-        case 5:
-            explain = "Demonstrates a generally clear organisation of ideas, but with occasional misuse of cohesive devices.";
-            break;
-        case 6:
-            explain = "Presents a clear overall organisation, but may show some underuse or overuse of cohesive devices.";
-            break;
-        case 7:
-            explain = "Shows a good control over organisation and cohesion, with varied and appropriate use of cohesive devices.";
-            break;
-        case 8:
-            explain = "Manages coherence and cohesion very effectively, with skillful use of paragraphs and cohesive devices.";
-            break;
-        case 9:
-            explain = "Expertly manages both coherence and cohesion, with seamless integration of ideas across the text.";
-            break;
-        default:
-            explain = "Invalid score.";
-            break;
+        explain = "Expertly manages both coherence and cohesion, with seamless integration of ideas across the text.";
+    } else {
+        score = 'invalid';
+        explain = 'Somethings wrong, report to the administrator'
     }
 
     return {score: score, explain: explain};
