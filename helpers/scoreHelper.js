@@ -5,7 +5,7 @@ function getContentScore(userAnswer, topic) {
     let cutoffComma = userAnswer.replace(/[.,\/#!$%\^&\*;:{}=_`~()]/g,"");
     let lowercase = cutoffComma.toLowerCase().split(/\s+/);
     let splitWords = lowercase.map(word => {
-        // Get Rid of all 's and s'
+        // Get Rid of all "'s" and "s'"
         return word.replace(/'s$/, '').replace(/s'$/, '');
     });
 
