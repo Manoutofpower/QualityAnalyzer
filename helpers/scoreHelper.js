@@ -79,8 +79,8 @@ function getCoherenceScore(userAnswer) {
 
     // Calculate percentage
     const percentage = (matchCount / words.length) * 100;
-    let score;
 
+    let score;
     // Percentage to Score
     if (percentage < 0) {
         score = 1;
@@ -140,8 +140,76 @@ function getCoherenceScore(userAnswer) {
 }
 
 function getLexicalScore(userAnswer) {
-    //TODO GET LEXICAL SCORE
-    return {score: 1, explain: "2"};
+    const words = userAnswer.toLowerCase().match(/\b(\w+)\b/g);
+    let matchCount = 0;
+
+    const awlSet = new Set(AWL);
+
+    words.forEach(word => {
+        if (awlSet.has(word)) {
+            matchCount++;
+        }
+    });
+
+    const percentage = (matchCount / words.length) * 100;
+
+    let score;
+    // Percentage to Score
+    if (percentage < 0) {
+        score = 1;
+    } else if (percentage < 3) {
+        score = 2;
+    } else if (percentage < 5) {
+        score = 3;
+    } else if (percentage < 10) {
+        score = 4;
+    } else if (percentage < 15) {
+        score = 5;
+    } else if (percentage < 20) {
+        score = 6;
+    } else if (percentage < 25) {
+        score = 7;
+    } else if (percentage < 30) {
+        score = 8;
+    } else {
+        score = 9;
+    }
+
+    let explain;
+    switch (score) {
+        case 1:
+            explain = "Uses an extremely limited range of vocabulary; errors in word choice are pervasive and impede understanding.";
+            break;
+        case 2:
+            explain = "Shows limited vocabulary; frequent errors in word choice cause confusion and detract from clarity.";
+            break;
+        case 3:
+            explain = "Demonstrates a limited range of vocabulary, with repetitive and basic word choices; makes noticeable errors that affect comprehension.";
+            break;
+        case 4:
+            explain = "Utilizes a limited but effective range of vocabulary; some errors still occur, but they do not significantly hinder communication.";
+            break;
+        case 5:
+            explain = "Displays a reasonable range of vocabulary; may make mistakes, but unlikely to cause misunderstanding.";
+            break;
+        case 6:
+            explain = "Shows a good range of vocabulary for familiar topics; some inaccuracies occur, but errors rarely reduce communication.";
+            break;
+        case 7:
+            explain = "Exhibits a broad lexical repertoire and flexibility in topic-specific vocabulary; occasional inaccuracies are present but do not impede communication.";
+            break;
+        case 8:
+            explain = "Demonstrates a wide range of vocabulary fluently and flexibly; uses rare minor errors or inappropriacies.";
+            break;
+        case 9:
+            explain = "Uses a wide range of vocabulary with very natural and sophisticated control of lexical features; errors are rare and difficult to spot.";
+            break;
+        default:
+            explain = "Invalid score.";
+            break;
+    }
+
+    return {score: score, explain: explain};
 }
 
 function getGrammarScore(word) {
