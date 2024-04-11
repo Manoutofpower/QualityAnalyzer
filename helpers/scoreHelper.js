@@ -1,3 +1,5 @@
+import AWL from '../data/awl.js'
+
 function getContentScore(userAnswer, topic) {
     const topics = topic.split('|');
     let score = 1;
@@ -137,7 +139,7 @@ function getCoherenceScore(userAnswer) {
     return {score: score, explain: explain};
 }
 
-function getLexicalScore(word) {
+function getLexicalScore(userAnswer) {
     //TODO GET LEXICAL SCORE
     return {score: 1, explain: "2"};
 }

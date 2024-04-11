@@ -14,7 +14,7 @@ scoringRouter.post('/check', function (req, res, next) {
         let scoreResponse = scoreResult;
         scoreResponse.scoreResult.content = Helper.ScoreHelper.getContentScore(userAnswer, topic);
         scoreResponse.scoreResult.coherence = Helper.ScoreHelper.getCoherenceScore(userAnswer);
-        scoreResponse.scoreResult.lexical = Helper.ScoreHelper.getLexicalScore();
+        scoreResponse.scoreResult.lexical = Helper.ScoreHelper.getLexicalScore(userAnswer);
         scoreResponse.scoreResult.grammar = Helper.ScoreHelper.getGrammarScore();
         scoreResponse.scoreResult.autoCorrectionResult = cb.matches;
         res.json(scoreResponse.scoreResult);
