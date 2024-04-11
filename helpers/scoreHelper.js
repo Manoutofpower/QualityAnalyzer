@@ -160,12 +160,10 @@ function getCoherenceScore(userAnswer) {
     return { score: score, explain: explain };
 }
 
-
 function getLexicalScore(userAnswer) {
     const awlSet = new Set(AWL);
 
     const cleanedAnswer = userAnswer.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=_`~()]/g, "");
-
     const words = cleanedAnswer.split(/\s+/);
 
     let matchCount = 0;
@@ -175,66 +173,44 @@ function getLexicalScore(userAnswer) {
             matchCount++;
         }
     });
-    const percentage = (matchCount / cleanedAnswer.length) * 100;
+
+    const percentage = (matchCount / words.length) * 100;
 
     let score;
-    // Percentage to Score
-    if (percentage < 0) {
-        score = 1;
-    } else if (percentage < 3) {
+    let explain;
+
+    if (percentage < 3) {
         score = 2;
+        explain = "Shows limited vocabulary; frequent errors in word choice cause confusion and detract from clarity.";
     } else if (percentage < 5) {
         score = 3;
+        explain = "Demonstrates a limited range of vocabulary, with repetitive and basic word choices; makes noticeable errors that affect comprehension.";
     } else if (percentage < 10) {
         score = 4;
+        explain = "Utilizes a limited but effective range of vocabulary; some errors still occur, but they do not significantly hinder communication.";
     } else if (percentage < 15) {
         score = 5;
+        explain = "Displays a reasonable range of vocabulary; may make mistakes, but unlikely to cause misunderstanding.";
     } else if (percentage < 20) {
         score = 6;
+        explain = "Shows a good range of vocabulary for familiar topics; some inaccuracies occur, but errors rarely reduce communication.";
     } else if (percentage < 25) {
         score = 7;
+        explain = "Exhibits a broad lexical repertoire and flexibility in topic-specific vocabulary; occasional inaccuracies are present but do not impede communication.";
     } else if (percentage < 30) {
         score = 8;
-    } else {
+        explain = "Demonstrates a wide range of vocabulary fluently and flexibly; uses rare minor errors or inappropriacies.";
+    } else if (percentage >= 30) {
         score = 9;
+        explain = "Uses a wide range of vocabulary with very natural and sophisticated control of lexical features; errors are rare and difficult to spot.";
+    } else {
+        score = 1;
+        explain = "Uses an extremely limited range of vocabulary; errors in word choice are pervasive and impede understanding.";
     }
 
-    let explain;
-    switch (score) {
-        case 1:
-            explain = "Uses an extremely limited range of vocabulary; errors in word choice are pervasive and impede understanding.";
-            break;
-        case 2:
-            explain = "Shows limited vocabulary; frequent errors in word choice cause confusion and detract from clarity.";
-            break;
-        case 3:
-            explain = "Demonstrates a limited range of vocabulary, with repetitive and basic word choices; makes noticeable errors that affect comprehension.";
-            break;
-        case 4:
-            explain = "Utilizes a limited but effective range of vocabulary; some errors still occur, but they do not significantly hinder communication.";
-            break;
-        case 5:
-            explain = "Displays a reasonable range of vocabulary; may make mistakes, but unlikely to cause misunderstanding.";
-            break;
-        case 6:
-            explain = "Shows a good range of vocabulary for familiar topics; some inaccuracies occur, but errors rarely reduce communication.";
-            break;
-        case 7:
-            explain = "Exhibits a broad lexical repertoire and flexibility in topic-specific vocabulary; occasional inaccuracies are present but do not impede communication.";
-            break;
-        case 8:
-            explain = "Demonstrates a wide range of vocabulary fluently and flexibly; uses rare minor errors or inappropriacies.";
-            break;
-        case 9:
-            explain = "Uses a wide range of vocabulary with very natural and sophisticated control of lexical features; errors are rare and difficult to spot.";
-            break;
-        default:
-            explain = "Invalid score.";
-            break;
-    }
-
-    return {score: score, explain: explain};
+    return { score: score, explain: explain };
 }
+
 
 function getGrammarScore(error) {
     let errorCount = error.filter(error => "message" in error).length;
