@@ -1,6 +1,7 @@
 import AWL from '../data/awl.js'
 import dictionary from "../data/dictionary.js"
 import coherenceWords from "../data/coherenceWords.js";
+import stopwords from "../data/stopwords.js";
 
 function getContentScore(userAnswer, topic) {
     const topics = topic.split('|');
