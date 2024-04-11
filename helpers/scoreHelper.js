@@ -6,6 +6,7 @@ function getContentScore(userAnswer, topic) {
     let allRelatedWordsSet = new Set();
 
     for (const keyword of topics) {
+        allRelatedWordsSet.add(keyword);
         // Syn
         const synonyms = getRelatedWords(keyword, 'rel_syn');
         synonyms.forEach(word => allRelatedWordsSet.add(word));
@@ -13,6 +14,9 @@ function getContentScore(userAnswer, topic) {
         const antonyms = getRelatedWords(keyword, 'rel_ant');
         antonyms.forEach(word => allRelatedWordsSet.add(word));
     }
+
+    //const allRelatedWordsArray = Array.from(allRelatedWordsSet);
+    //console.log(allRelatedWordsArray.slice(0, 100));
 
     let cutoffComma = userAnswer.replace(/[.,\/#!$%\^&\*;:{}=_`~()]/g,"");
     let lowercase = cutoffComma.toLowerCase().split(/\s+/);
