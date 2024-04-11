@@ -15,8 +15,8 @@ function getContentScore(userAnswer, topic) {
         antonyms.forEach(word => allRelatedWordsSet.add(word));
     }
 
-    //const allRelatedWordsArray = Array.from(allRelatedWordsSet);
-    //console.log(allRelatedWordsArray.slice(0, 100));
+    const allRelatedWordsArray = Array.from(allRelatedWordsSet);
+    console.log(allRelatedWordsArray.slice(0, 100));
 
     let cutoffComma = userAnswer.replace(/[.,\/#!$%\^&\*;:{}=_`~()]/g,"");
     let lowercase = cutoffComma.toLowerCase().split(/\s+/);
@@ -27,44 +27,45 @@ function getContentScore(userAnswer, topic) {
 
     let score = 1;
     let explain;
-
+    let matchedCount = 0;
     allRelatedWordsSet.forEach(relatedWord => {
         if (splitWords.includes(relatedWord)) {
-            score += 1;
+            matchedCount += 1;
         }
     });
 
-    switch (score) {
-        case 1:
-            explain = "Does not address the topic or task.";
-            break;
-        case 2:
-            explain = "Addresses the task only minimally with very limited relevance.";
-            break;
-        case 3:
-            explain = "Addresses the task only partially; the response is largely irrelevant.";
-            break;
-        case 4:
-            explain = "Responds to the task only to a limited extent. Some key information may be missing.";
-            break;
-        case 5:
-            explain = "Generally addresses the task; key information is presented but may lack detail.";
-            break;
-        case 6:
-            explain = "Addresses the task adequately, but some key information may be inaccurately or incompletely covered.";
-            break;
-        case 7:
-            explain = "Addresses all parts of the task, although some parts may be more fully covered than others.";
-            break;
-        case 8:
-            explain = "Covers the task in detail with relevant, accurate content throughout.";
-            break;
-        case 9:
-            explain = "Fully addresses the requirements of the task with complete and fully relevant responses.";
-            break;
-        default:
-            explain = "Score";
-            break;
+    let matchPercentage = (matchedCount / allRelatedWordsSet.size) * 100;
+
+    if (matchPercentage >= 60) {
+        score = 9;
+        explain = "Fully addresses the requirements of the task with complete and fully relevant responses.";
+    } else if (matchPercentage >= 50) {
+        score = 8;
+        explain = "Covers the task in detail with relevant, accurate content throughout.";
+    } else if (matchPercentage >= 40) {
+        score = 7;
+        explain = "Addresses all parts of the task, although some parts may be more fully covered than others.";
+    } else if (matchPercentage >= 30) {
+        score = 6;
+        explain = "Addresses the task adequately, but some key information may be inaccurately or incompletely covered.";
+    } else if (matchPercentage >= 20) {
+        score = 5;
+        explain = "Generally addresses the task; key information is presented but may lack detail.";
+    } else if (matchPercentage >= 10) {
+        score = 4;
+        explain = "Responds to the task only to a limited extent. Some key information may be missing.";
+    } else if (matchPercentage >= 7) {
+        score = 3;
+        explain = "Addresses the task only partially; the response is largely irrelevant.";
+    } else if (matchPercentage >= 4) {
+        score = 2;
+        explain = "Addresses the task only minimally with very limited relevance.";
+    } else if (matchPercentage < 4){
+        score = 1;
+        explain = "Does not address the topic or task.";
+    } else {
+        score = 'invalid'
+        explain = 'Somethings wrong, report to the administrator'
     }
 
     return {score: score, explain: explain};
