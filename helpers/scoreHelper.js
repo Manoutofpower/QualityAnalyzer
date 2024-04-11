@@ -3,7 +3,16 @@ import dictionary from "../data/dictionary.js"
 
 function getContentScore(userAnswer, topic) {
     const topics = topic.split('|');
-    let score = 1;
+    let allRelatedWordsSet = new Set();
+
+    for (const keyword of topics) {
+        // Syn
+        const synonyms = getRelatedWords(keyword, 'rel_syn');
+        synonyms.forEach(word => allRelatedWordsSet.add(word));
+        // Ant
+        const antonyms = getRelatedWords(keyword, 'rel_ant');
+        antonyms.forEach(word => allRelatedWordsSet.add(word));
+    }
 
     let cutoffComma = userAnswer.replace(/[.,\/#!$%\^&\*;:{}=_`~()]/g,"");
     let lowercase = cutoffComma.toLowerCase().split(/\s+/);
@@ -12,13 +21,15 @@ function getContentScore(userAnswer, topic) {
         return word.replace(/'s$/, '').replace(/s'$/, '');
     });
 
-    topics.forEach(topicWord => {
-        if (splitWords.includes(topicWord)){
+    let score = 1;
+    let explain;
+
+    allRelatedWordsSet.forEach(relatedWord => {
+        if (splitWords.includes(relatedWord)) {
             score += 1;
         }
     });
 
-    let explain;
     switch (score) {
         case 1:
             explain = "Does not address the topic or task.";
@@ -55,7 +66,17 @@ function getContentScore(userAnswer, topic) {
     return {score: score, explain: explain};
 }
 
+function getRelatedWords(word, relType) {
+    const wordEntry = dictionary.find(entry => entry.word === word);
 
+    if (wordEntry && relType === 'rel_syn') {
+        return wordEntry.synonyms.slice();
+    }
+    else if (wordEntry && relType === 'rel_ant') {
+        return wordEntry.antonyms.slice();
+    }
+    return [];
+}
 function getCoherenceScore(userAnswer) {
     const coherenceWords = new Set([
         // The word set
