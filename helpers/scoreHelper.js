@@ -4,59 +4,53 @@ import coherenceWords from "../data/coherenceWords.js";
 import stopwords from "../data/stopwords.js";
 import nlp from 'compromise'
 
+// Function to compute content score based on user's answer and provided topic keywords
 function getContentScore(userAnswer, topic) {
-    const topics = topic.split('|');
-    let allRelatedWordsSet = new Set();
+    const topics = topic.split('|'); // Split topic string into individual keywords
+    let allRelatedWordsSet = new Set(); // Create a set to store unique related words
 
+    // Populate the set with synonyms and antonyms for each topic keyword
     for (const keyword of topics) {
-        allRelatedWordsSet.add(keyword);
-        // Syn
+        allRelatedWordsSet.add(keyword); // Add the keyword itself
+        // Add synonyms of the keyword
         const synonyms = getRelatedWords(keyword, 'rel_syn');
         synonyms.forEach(word => allRelatedWordsSet.add(word));
-        // Ant
+        // Add antonyms of the keyword
         const antonyms = getRelatedWords(keyword, 'rel_ant');
         antonyms.forEach(word => allRelatedWordsSet.add(word));
     }
 
-    // Remove punctuation from user's answer and convert to lowercase, then split into words
+    // Remove punctuation from user's answer, convert to lowercase, then split into words
     let cutoffComma = userAnswer.replace(/[.,\/#!$%\^&\*;:{}=_`~()]/g, "");
     let lowercase = cutoffComma.toLowerCase().split(/\s+/);
 
-    // Join words back into a single string for NLP processing
+    // Join words for NLP processing
     let preprocessedText = lowercase.join(' ');
 
-    // Process text with NLP library
+    // Process text using NLP to extract different parts of speech
     let preprocessDoc = nlp(preprocessedText);
+    let verbs = preprocessDoc.verbs().toInfinitive().out('array'); // Convert verbs to infinitive form
+    let nouns = preprocessDoc.nouns().toSingular().out('array'); // Convert nouns to singular form
+    let adjectives = preprocessDoc.adjectives().out('array'); // Extract adjectives
+    let adverbs = preprocessDoc.adverbs().out('array'); // Extract adverbs
 
-    // Extract verbs in infinitive form, nouns in singular form, adjectives, and adverbs
-    let verbs = preprocessDoc.verbs().toInfinitive().out('array');
-    let nouns = preprocessDoc.nouns().toSingular().out('array');
-    let adjectives = preprocessDoc.adjectives().out('array');
-    let adverbs = preprocessDoc.adverbs().out('array');
-
-    // Combine all extracted words into one array
+    // Combine extracted words into one array
     let group = verbs.concat(nouns, adjectives, adverbs);
 
+    // Split compound words and remove possessive endings
     let splitWords = group.flatMap(item => {
-        // Separate by space
         let words = item.split(' ');
-        return words.map(word => {
-            // Get rid of "'s" and mul
-            return word.replace(/'s$/, '').replace(/s'$/, '');
-        });
+        return words.map(word => word.replace(/'s$/, '').replace(/s'$/, ''));
     });
 
-    //if no include in stopwords.js, add it in.
+    // Filter out stopwords
     let cutoffStopwords = splitWords.filter(word => !stopwords.includes(word));
-    // Now all the non-stopwords here are processed.
-    // Use the synonyms, antonyms obtained from processing all topics above for comparison.
-    // Finally, obtain a count.
+    // Calculate the count of relevant keywords found in the user's answer
     let foundKeywordsCount = cutoffStopwords.filter(word => allRelatedWordsSet.has(word)).length;
-    let proportion = (foundKeywordsCount / cutoffStopwords.length)*100;
+    let proportion = (foundKeywordsCount / cutoffStopwords.length) * 100; // Calculate proportion as a percentage
 
-    let score;
-    let explain;
-
+    // Determine score based on the proportion of relevant keywords
+    let score, explain;
     if (proportion >= 60) {
         score = 9;
         explain = "Fully addresses the requirements of the task with complete and fully relevant responses.";
@@ -85,16 +79,18 @@ function getContentScore(userAnswer, topic) {
         score = 1;
         explain = "Does not address the topic or task.";
     } else {
-        score = 'invalid'
-        explain = 'Somethings wrong, report to the administrator'
+        score = 'invalid';
+        explain = "Somethings wrong, report to the administrator";
     }
 
-    return {score: score, explain: explain};
+    return { score: score, explain: explain };
 }
 
+// Function to retrieve related words (synonyms or antonyms) from the dictionary
 function getRelatedWords(word, relType) {
-    const wordEntry = dictionary.find(entry => entry.word === word);
+    const wordEntry = dictionary.find(entry => entry.word === word); // Find the word in the dictionary
 
+    // Return synonyms or antonyms based on relType
     if (wordEntry && relType === 'rel_syn') {
         return wordEntry.synonyms.slice();
     } else if (wordEntry && relType === 'rel_ant') {
@@ -103,12 +99,16 @@ function getRelatedWords(word, relType) {
     return [];
 }
 
+// Function to evaluate coherence and cohesion of user's written response
 function getCoherenceScore(userAnswer) {
+    // Initialize a set with predefined coherence words for easy lookup
     const coherenceWordsSet = new Set(coherenceWords);
 
+    // Split user's answer into paragraphs based on newline characters
     const paragraphSplit = userAnswer.split('\n');
     let paragraphs = [];
 
+    // Filter out empty paragraphs and trim spaces
     for (let i = 0; i < paragraphSplit.length; i++) {
         let paragraph = paragraphSplit[i];
         if (paragraph.trim() !== '') {
@@ -116,41 +116,44 @@ function getCoherenceScore(userAnswer) {
         }
     }
 
-    let totalPercentage = 0;
-    let totalWords = [];
+    let totalPercentage = 0; // Sum of percentages of coherence words used across all paragraphs
+    let totalWords = []; // Array to store all words from all paragraphs for further analysis
 
+    // Process each paragraph to find coherence words and calculate their frequency
     paragraphs.forEach(paragraph => {
+        // Clean paragraph by lowering case and removing punctuation
         const cleanedParagraph = paragraph.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=_`~()]/g, "");
-        let paragraphWords = cleanedParagraph.split(/\s+/);
-        totalWords.push(...paragraphWords);
-        let matchCount = 0;
+        let paragraphWords = cleanedParagraph.split(/\s+/); // Split into words by spaces
+        totalWords.push(...paragraphWords); // Add to total words list
+        let matchCount = 0; // Counter for matched coherence words
 
+        // Check each coherence word against the cleaned paragraph
         coherenceWordsSet.forEach(cohesionPhrase => {
+            // Create a regular expression to find whole words only, avoiding partial matches
             const pattern = new RegExp("\\b" + cohesionPhrase + "\\b", "g");
             const match = cleanedParagraph.match(pattern);
             if (match) {
-                matchCount += match.length;
+                matchCount += match.length; // Increment match count by the number of times the coherence word appears
             }
         });
 
-        let percentage = 0;
+        let percentage = 0; // Percentage of coherence words in the current paragraph
         if (paragraphWords.length > 0) {
             percentage = (matchCount / paragraphWords.length) * 100;
         }
-        totalPercentage += percentage;
+        totalPercentage += percentage; // Add current paragraph's percentage to total
     });
 
-    let averagePercentage = 0;
+    let averagePercentage = 0; // Average percentage of coherence word usage across all paragraphs
     if (paragraphs.length > 0) {
-        averagePercentage = totalPercentage / paragraphs.length;
+        averagePercentage = totalPercentage / paragraphs.length; // Calculate average
     }
 
-    let score;
-    let explain;
-
+    // Determine the coherence score based on the average percentage of coherence words used
+    let score, explain; // Variables for score and explanation
     if (averagePercentage < 1) {
         score = 1;
-        explain = "Oh Bro";
+        explain = "Oh Bro"; // Example placeholder text, likely needs replacement
     } else if (averagePercentage < 3) {
         score = 2;
         explain = "Shows some attempt to organize ideas, but connections between sentences are flawed or non-existent.";
@@ -180,8 +183,10 @@ function getCoherenceScore(userAnswer) {
         explain = "Something's wrong, report to the administrator";
     }
 
+    // Return an object with the calculated score and the corresponding explanation
     return {score: score, explain: explain};
 }
+
 
 function getLexicalScore(userAnswer) {
     const awlSet = new Set(AWL);
