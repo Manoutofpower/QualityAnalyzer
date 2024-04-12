@@ -48,15 +48,11 @@ function getContentScore(userAnswer, topic) {
 
     //if no include in stopwords.js, add it in.
     let cutoffStopwords = splitWords.filter(word => !stopwords.includes(word));
-    console.log(cutoffStopwords.length);
     // Now all the non-stopwords here are processed.
     // Use the synonyms, antonyms obtained from processing all topics above for comparison.
     // Finally, obtain a count.
     let foundKeywordsCount = cutoffStopwords.filter(word => allRelatedWordsSet.has(word)).length;
     let proportion = (foundKeywordsCount / cutoffStopwords.length)*100;
-
-    console.log(foundKeywordsCount);
-    console.log(proportion);
 
     let score;
     let explain;
