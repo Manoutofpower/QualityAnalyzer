@@ -234,7 +234,6 @@ function getLexicalScore(userAnswer) {
     return {score: score, explain: explain};
 }
 
-
 function getGrammarScore(error) {
     let errorCount = error.filter(error => "message" in error).length;
     // Initial 9
